@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class Tracker():
+class Tracker(object):
     def __init__(self):
         self.bbox = []
         self.index = []
