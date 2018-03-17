@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import numpy as np
+import copy
 
 
 class Tracker(object):
@@ -9,7 +11,7 @@ class Tracker(object):
         self.features_current = []
 
     def update(self):
-        self.features_previous = self.features_current
+        self.features_previous = copy.deepcopy(self.features_current)
 
     def match(self):
         # 待更新
