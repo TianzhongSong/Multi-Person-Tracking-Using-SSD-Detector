@@ -21,8 +21,8 @@ def run_camera(input_shape, model):
     vid = cv2.VideoCapture(0)
     sleep(1.0)
     # Compute aspect ratio of video
-    vidw = vid.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
-    vidh = vid.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
+    vidw = vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+    vidh = vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
     trackers = Tracker()
     while True:
         ret, origin_image = vid.read()
@@ -72,25 +72,28 @@ def run_camera(input_shape, model):
                             top_xmax[i] * vidw))
                         ymax = int(round((top_ymax[i] * vidh) * 1.1)) if int(round(
                             (top_ymax[i] * vidh) * 1.1)) <= vidh else int(round(top_ymax[i] * vidh))
-                        curWindow = [xmin, ymin, xmax, ymax]
-                        trackers.bbox.append(curWindow)
-                        feature = Extract_feature(frame[ymin:ymax, xmin:xmax, :])
-                        trackers.features_current.append(feature)
+                        trackers.bbox.append([xmin, ymin, xmax, ymax])
+                        trackers.features_current.append(
+                            Extract_feature(cv2.resize(frame[ymin:ymax, xmin:xmax, :], (32, 32))))
                 if trackers.features_previous is None:
                     trackers.index.append(i for i in range(len(trackers.bbox)))
-                    for item, index in trackers.bbox, trackers.index:
-                        cv2.rectangle(frame, (int(item[0]), int(item[1])), (int(item[2]), int(item[3])), (255, 0, 0), 2)
-                        cv2.putText(frame, "person: {}".format(index + 1), (item[0] + 10, item[1] + 10),
+                    for j in range(len(trackers.features_current)):
+                        cv2.rectangle(frame, (int(trackers.bbox[j][0]), int(trackers.bbox[j][1])),
+                                      (int(trackers.bbox[j][2]), int(trackers.bbox[j][3])), (255, 0, 0), 2)
+                        cv2.putText(frame, "person: {}".format(trackers.index[j] + 1),
+                                    (trackers.bbox[j][0] + 10, trackers.bbox[j][1] + 10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
                 else:
                     trackers.match()
                     trackers.update()
-                    for item, index in trackers.bbox, trackers.index:
-                        cv2.rectangle(frame, (int(item[0]), int(item[1])), (int(item[2]), int(item[3])), (255, 0, 0), 2)
-                        cv2.putText(frame, "person: {}".format(index + 1), (item[0] + 10, item[1] + 10),
+                    for j in range(len(trackers.features_current)):
+                        cv2.rectangle(frame, (int(trackers.bbox[j][0]), int(trackers.bbox[j][1])),
+                                      (int(trackers.bbox[j][2]), int(trackers.bbox[j][3])), (255, 0, 0), 2)
+                        cv2.putText(frame, "person: {}".format(trackers.index[j] + 1),
+                                    (trackers.bbox[j][0] + 10, trackers.bbox[j][1] + 10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1)
         cv2.imshow('tracking', frame)
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        if cv2.waitKey(5) & 0xFF == ord('q'):
             break
 
 
